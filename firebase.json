@@ -1,0 +1,33 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "nemocare-2ce11",
+          "appId": "1:380341028459:android:ce6810f5c0e438b642532e",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "nemocare-2ce11",
+          "appId": "1:380341028459:ios:2514bd96229ce2be42532e",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "nemocare-2ce11",
+          "configurations": {
+            "android": "1:380341028459:android:ce6810f5c0e438b642532e",
+            "ios": "1:380341028459:ios:2514bd96229ce2be42532e"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  }
+}

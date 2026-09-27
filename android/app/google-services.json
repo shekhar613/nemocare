@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "380341028459",
+    "project_id": "nemocare-2ce11",
+    "storage_bucket": "nemocare-2ce11.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:380341028459:android:ce6810f5c0e438b642532e",
+        "android_client_info": {
+          "package_name": "com.nemocare.nemo_care"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "380341028459-8ngqtpbkr50famnn67akkl53n7bk75rf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBW49tos9LXVEMHLpkKQdlDtBmpCAb9IOg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "380341028459-8ngqtpbkr50famnn67akkl53n7bk75rf.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "380341028459-mfsp8v36rjll9nl804m68u0dnmt4df9j.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.nemocare.nemoCare"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
