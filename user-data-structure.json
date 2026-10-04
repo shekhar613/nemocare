@@ -1,0 +1,55 @@
+{
+    "USERS":{
+        "shekhararya613@gmail.com":{
+            "name":"shekhar arya",
+            "dob":"2002-01-01",
+            "gender":"male",
+            "height_cm":170,
+            "weight_kg":70,
+            "bmi":24.2,
+            "married":false,
+            "<report-name>":{
+                "<date-of-test-report>":                    
+                {
+                    "docType": "cbc",
+                    "isMedical": true,
+                    "labName": "Sankara Eye Centre, Indore",
+                    "patientName": "Jyoti Shastri",
+                    "patientSex": "female",
+                    "patientAge": 43,
+                    "collectedDate": "2026-09-14",
+                    "reportApprovedDate": "2026-09-14",
+                    "regnNo": "6090500151",
+                    "mrdNo": "SECIND/189754/26",
+                    "values": [
+                      { "parameterKey": "hemoglobin", "rawLabel": "Haemoglobin (Hb)", "valueType": "numeric", "value": 12.2, "unit": "g/dL", "refLow": 12.0, "refHigh": 15.0, "flag": null },
+                      { "parameterKey": "rbc_count", "rawLabel": "RBC Count", "valueType": "numeric", "value": 4.60, "unit": "million/uL", "refLow": 3.8, "refHigh": 4.8, "flag": null },
+                      { "parameterKey": "hematocrit", "rawLabel": "Hematocrit (HCT)", "valueType": "numeric", "value": 37.2, "unit": "%", "refLow": 36.0, "refHigh": 46.0, "flag": null },
+                      { "parameterKey": "mcv", "rawLabel": "MCV", "valueType": "numeric", "value": 81.0, "unit": "fL", "refLow": 83.0, "refHigh": 101.0, "flag": "L" },
+                      { "parameterKey": "mch", "rawLabel": "MCH", "valueType": "numeric", "value": 26.4, "unit": "pg", "refLow": 27.0, "refHigh": 32.0, "flag": "L" },
+                      { "parameterKey": "mchc", "rawLabel": "MCHC", "valueType": "numeric", "value": 32.6, "unit": "g/dL", "refLow": 31.5, "refHigh": 34.5, "flag": null },
+                      { "parameterKey": "rdw_cv", "rawLabel": "RDW CV", "valueType": "numeric", "value": 12.9, "unit": "%", "refLow": 11.6, "refHigh": 14.0, "flag": null },
+                      { "parameterKey": "wbc_count", "rawLabel": "Total WBC Count", "valueType": "numeric", "value": 8200, "unit": "/uL", "refLow": 4000, "refHigh": 10000, "flag": null },
+                      { "parameterKey": "neutrophils_pct", "rawLabel": "Neutrophils", "valueType": "numeric", "value": 65, "unit": "%", "refLow": 50, "refHigh": 62, "flag": "H" },
+                      { "parameterKey": "lymphocytes_pct", "rawLabel": "Lymphocytes", "valueType": "numeric", "value": 29, "unit": "%", "refLow": 20, "refHigh": 40, "flag": null },
+                      { "parameterKey": "eosinophils_pct", "rawLabel": "Eosinophils", "valueType": "numeric", "value": 3, "unit": "%", "refLow": 0, "refHigh": 6, "flag": null },
+                      { "parameterKey": "monocytes_pct", "rawLabel": "Monocytes", "valueType": "numeric", "value": 3, "unit": "%", "refLow": 0, "refHigh": 10, "flag": null },
+                      { "parameterKey": "basophils_pct", "rawLabel": "Basophils", "valueType": "numeric", "value": 0, "unit": "%", "refLow": 0, "refHigh": 2, "flag": null },
+                      { "parameterKey": "absolute_neutrophil_count", "rawLabel": "Absolute Neutrophil Count", "valueType": "numeric", "value": 5330, "unit": "/uL", "refLow": 2000, "refHigh": 7000, "flag": null },
+                      { "parameterKey": "absolute_lymphocyte_count", "rawLabel": "Absolute Lymphocyte Count", "valueType": "numeric", "value": 2378, "unit": "/uL", "refLow": 1000, "refHigh": 3000, "flag": null },
+                      { "parameterKey": "absolute_eosinophil_count", "rawLabel": "Absolute Eosinophil Count", "valueType": "numeric", "value": 246, "unit": "/uL", "refLow": 20, "refHigh": 500, "flag": null },
+                      { "parameterKey": "absolute_monocyte_count", "rawLabel": "Absolute Monocyte Count", "valueType": "numeric", "value": 246, "unit": "/uL", "refLow": 200, "refHigh": 1000, "flag": null },
+                      { "parameterKey": "absolute_basophil_count", "rawLabel": "Absolute Basophil Count", "valueType": "numeric", "value": 0, "unit": "/uL", "refLow": null, "refHigh": 100, "flag": null },
+                      { "parameterKey": "platelet_count", "rawLabel": "Platelet", "valueType": "numeric", "value": 282000, "unit": "/uL", "refLow": 150000, "refHigh": 410000, "flag": null },
+                      { "parameterKey": "mpv", "rawLabel": "MPV", "valueType": "numeric", "value": 9.0, "unit": "fL", "refLow": 6.5, "refHigh": 12.0, "flag": null },
+                      { "parameterKey": "pdw", "rawLabel": "PDW", "valueType": "numeric", "value": 15.9, "unit": "fL", "refLow": 9.6, "refHigh": 15.2, "flag": "H" },
+                      { "parameterKey": "plateletcrit", "rawLabel": "Plateletcrit (PCT)", "valueType": "numeric", "value": 2.540, "unit": "%", "refLow": 0.19, "refHigh": 0.39, "flag": "H" }
+                    ]
+                  }
+            }
+            
+
+            
+        }
+    }
+}

@@ -38,24 +38,42 @@ Respond with ONLY a JSON object (no markdown) using this exact schema:
 {
   "is_medical": boolean,
   "category": "lab" | "prescription" | "imaging" | "clinical_report" | "other_medical" | "non_medical",
-  "document_type": "lab" | "prescription" | "imaging" | "clinical_report" | "other_medical" | "non_medical",
-  "report_name": "prefer a standard panel name when possible: CBC, Blood Sugar / Diabetes Panel, Blood Pressure, Lipid Profile, Liver Function Test (LFT), Kidney Function Test (KFT/RFT), Urine Routine, Thyroid Profile, Vitamin Panel, Iron Studies — otherwise a short test name",
+  "doc_type": "short snake_case panel key used for storage, e.g. cbc, lipid_profile, lft, kft, thyroid_profile, urine_routine, vitamin_panel, iron_studies, blood_sugar, prescription, imaging, clinical_report",
+  "report_name": "human title e.g. CBC, Lipid Profile",
   "lab_name": "lab / hospital / clinic name if printed, else empty string",
   "city_name": "city or locality printed on the report, or empty string if unknown",
   "sample_type": "specimen / sample type if printed (e.g. Blood, Serum, Urine, Plasma), else empty string",
-  "collection_date": "sample collection date if printed (prefer YYYY-MM-DD); else same as test_date when only one date exists",
-  "test_date": "date of the test / report as written on the document (prefer YYYY-MM-DD if clear)",
-  "parameters": ["ONLY short parameter or analyte names, e.g. Hemoglobin, WBC, Platelets — no values, no explanations"],
+  "collection_date": "sample collection date (prefer YYYY-MM-DD)",
+  "test_date": "report / approved date (prefer YYYY-MM-DD)",
+  "report_approved_date": "same as test_date when only one date exists (YYYY-MM-DD)",
+  "patient_name": "string or empty",
+  "patient_sex": "male | female | other | empty",
+  "patient_age": number or null,
+  "regn_no": "registration number if printed, else empty",
+  "mrd_no": "MRD / hospital id if printed, else empty",
+  "values": [
+    {
+      "parameterKey": "hemoglobin",
+      "rawLabel": "Haemoglobin (Hb)",
+      "valueType": "numeric",
+      "value": 12.2,
+      "unit": "g/dL",
+      "refLow": 12.0,
+      "refHigh": 15.0,
+      "flag": null
+    }
+  ],
+  "parameters": ["short analyte names only"],
   "vitals": [
     {
       "parameter": "Hemoglobin",
-      "value": "13.5",
+      "value": "12.2",
       "unit": "g/dL",
       "reference": "12.0 - 15.0",
       "status": "normal"
     }
   ],
-  "conclusion": "1-3 sentence clinical conclusion / impression / overall result from the document (no medical advice)",
+  "conclusion": "1-3 sentence clinical conclusion / impression (no medical advice)",
   "confidence": number between 0 and 1,
   "full_report": {
     "patient_name": "string or empty",
@@ -71,26 +89,14 @@ Respond with ONLY a JSON object (no markdown) using this exact schema:
   "rejection_reason": "if is_medical is false, explain briefly why; otherwise null"
 }
 
-category groups the document type so different medical reports can be stored separately:
-- lab = blood/urine/pathology lab panels
-- prescription = medicines / pharmacy
-- imaging = X-ray, MRI, CT, ultrasound
-- clinical_report = discharge, consultation, checkup notes
-- other_medical = other genuine medical paperwork
-- non_medical = reject
-Always set category and document_type to the same value.
-Always fill full_report with as much structured detail as you can read.
-parameters must be short names only — never long sentences.
-vitals must list ONLY measurable medical lab parameters (analytes / vitals),
-never patient demographics, dates, doctor names, addresses, or notes.
-Each vitals row:
-- value = reported result number/text
-- unit = measurement unit if present
-- reference = standard adult reference interval for comparison
-  (use common clinical ranges; include report range only if standard is unknown)
-- status = "low" | "normal" | "high" | "unknown" by comparing value to reference
-  (use flags on the report like H/L/* if present; otherwise compare numerically)
-If a field is missing on the document, use an empty string or empty array.
+Rules:
+- Always set doc_type to a stable snake_case key (cbc for Complete Blood Count, etc.).
+- values[] is required for lab panels: one row per analyte.
+- parameterKey = snake_case id; rawLabel = printed label; value = number when possible.
+- flag = "L" | "H" | null from the report marks or by comparing value to refLow/refHigh.
+- refLow/refHigh = numeric ends of the printed reference interval when available.
+- vitals can mirror values for UI compatibility.
+- Never diagnose or prescribe. If a field is missing, use empty string, empty array, or null.
 ''';
 
   Future<DocumentAnalysis> analyzeDocument({
@@ -133,11 +139,9 @@ If a field is missing on the document, use an empty string or empty array.
               'type': 'text',
               'text':
                   'Filename: "$fileName". Verify whether this document is medical, '
-                  'extract category, report_name, lab_name, city_name, '
-                  'sample_type, collection_date, test_date, '
-                  'parameters (short names only), vitals rows '
-                  '(parameter, value, unit, reference, status), '
-                  'conclusion, and full_report JSON.',
+                  'extract doc_type, report_name, lab_name, patient fields, '
+                  'dates, values[] (parameterKey, rawLabel, value, unit, '
+                  'refLow, refHigh, flag), vitals, conclusion, and full_report.',
             },
             {
               'type': 'image_url',

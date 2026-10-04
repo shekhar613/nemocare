@@ -1,8 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
+import '../models/finding.dart';
+import '../models/insight.dart';
 import '../models/medical_report.dart';
 import '../models/report_category.dart';
+import '../models/user_profile.dart';
+import 'findings_service.dart';
+import 'insights_service.dart';
+import 'user_profile_service.dart';
 
 class ReportsException implements Exception {
   ReportsException(this.message);
@@ -14,79 +21,104 @@ class ReportsException implements Exception {
 
 /// Persists verified medical reports under the signed-in user.
 ///
-/// Path: `users/{uid}/reports/{category_reportName+testDate}`
+/// Path shape (matches `user-data-structure.json`):
+/// `USERS/{email}` document with nested maps:
+///   `{reportName}` → `{testDate}` → report payload
+///   `findings` → `{findingKey}` → finding payload
+///   `insights` → `{ fingerprint, cards[] }`  (regenerated when findings change)
 ///
-/// Each document stores:
-/// - `report-name` — specific report title (CBC, Lipid Profile, …)
-/// - `category` — type: lab | prescription | imaging | clinical_report | other_medical
+/// Example: `USERS/user@mail.com.cbc.2026-09-14`
 class ReportsService {
   ReportsService({
     FirebaseFirestore? firestore,
     FirebaseAuth? auth,
+    UserProfileService? profiles,
+    FindingsService? findings,
+    InsightsService? insights,
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _auth = auth ?? FirebaseAuth.instance;
+        _auth = auth ?? FirebaseAuth.instance,
+        _profiles = profiles ?? UserProfileService(),
+        _findings = findings ?? FindingsService(),
+        _insights = insights ?? InsightsService();
 
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
+  final UserProfileService _profiles;
+  final FindingsService _findings;
+  final InsightsService _insights;
 
-  CollectionReference<Map<String, dynamic>> _reportsRef(String uid) {
-    return _firestore.collection('users').doc(uid).collection('reports');
+  DocumentReference<Map<String, dynamic>>? _userRef() {
+    final email = _auth.currentUser?.email;
+    if (email == null || email.trim().isEmpty) return null;
+    return _firestore
+        .collection(UserProfileService.collectionName)
+        .doc(email.trim().toLowerCase());
   }
 
   Future<MedicalReport> saveReport(MedicalReport report) async {
     final user = _auth.currentUser;
-    if (user == null) {
+    final email = user?.email;
+    if (user == null || email == null || email.trim().isEmpty) {
+      throw ReportsException(
+        'Sign in with an email account to save reports.',
+      );
+    }
+
+    await _profiles.ensureUserDocument(
+      email: email,
+      name: user.displayName,
+      uid: user.uid,
+    );
+
+    final reportKey = report.storageKey;
+    final dateKey = report.dateKey;
+    final saved = report.copyWith(
+      id: '$reportKey/$dateKey',
+      docType: reportKey,
+      testDate: dateKey,
+    );
+    final payload = saved.toUsersNestedPayload();
+
+    final ref = _userRef();
+    if (ref == null) {
       throw ReportsException('Sign in to save reports to your account.');
     }
 
-    final docId = MedicalReport.buildDocumentId(
-      category: report.category,
-      reportName: report.reportName,
-      testDate: report.testDate,
-    );
-    final saved = MedicalReport(
-      id: docId,
-      reportName: report.reportName,
-      category: report.category,
-      labName: report.labName,
-      cityName: report.cityName,
-      sampleType: report.sampleType,
-      collectionDate: report.collectionDate,
-      testDate: report.testDate,
-      parameters: report.parameters,
-      vitals: report.vitals,
-      conclusion: report.conclusion,
-      fileName: report.fileName,
-      fullReport: report.fullReport,
-      confidence: report.confidence,
-      createdAt: report.createdAt,
-      isStarred: report.isStarred,
-    );
-
     try {
-      final payload = saved.toFirestore();
-      // Preserve an existing star when re-uploading the same document.
-      final existing = await _reportsRef(user.uid).doc(docId).get();
-      if (existing.exists) {
-        final data = existing.data();
-        final wasStarred =
-            data?['isStarred'] == true || data?['starred'] == true;
-        payload['isStarred'] = wasStarred;
-        payload['starred'] = wasStarred;
+      // Preserve star if this exact report+date already exists.
+      final snap = await ref.get();
+      final existingData = snap.data() ?? <String, dynamic>{};
+      if (snap.exists) {
+        final existingMap = existingData[reportKey];
+        if (existingMap is Map && existingMap[dateKey] is Map) {
+          final existing =
+              Map<String, dynamic>.from(existingMap[dateKey] as Map);
+          final wasStarred =
+              existing['isStarred'] == true || existing['starred'] == true;
+          payload['isStarred'] = wasStarred;
+        }
       }
 
-      await _reportsRef(user.uid).doc(docId).set(
-            payload,
-            SetOptions(merge: true),
-          );
-      return saved.copyWith(
-        isStarred: payload['isStarred'] == true,
+      // FieldPath merge keeps sibling dates under the same report name.
+      await ref.update({
+        FieldPath([reportKey, dateKey]): payload,
+        'updatedAt': DateTime.now().toIso8601String(),
+      });
+
+      // Recompute deterministic findings from the full user doc.
+      await _recomputeAndWriteFindings(
+        ref: ref,
+        existingData: existingData,
+        reportKey: reportKey,
+        dateKey: dateKey,
+        reportPayload: payload,
       );
+
+      return saved.copyWith(isStarred: payload['isStarred'] == true);
     } on FirebaseException catch (e) {
       if (e.code == 'permission-denied') {
         throw ReportsException(
-          'Firestore permission denied. Enable Cloud Firestore and allow '
-          'users/{uid}/reports in your Firebase project.',
+          'Firestore permission denied. Allow writes on USERS/{email}.',
         );
       }
       throw ReportsException(
@@ -95,23 +127,108 @@ class ReportsService {
     }
   }
 
+  Future<void> _recomputeAndWriteFindings({
+    required DocumentReference<Map<String, dynamic>> ref,
+    required Map<String, dynamic> existingData,
+    required String reportKey,
+    required String dateKey,
+    required Map<String, dynamic> reportPayload,
+  }) async {
+    try {
+      // Build an in-memory view of the doc after this report write.
+      final merged = Map<String, dynamic>.from(existingData);
+      final reportMap = merged[reportKey] is Map
+          ? Map<String, dynamic>.from(merged[reportKey] as Map)
+          : <String, dynamic>{};
+      reportMap[dateKey] = reportPayload;
+      merged[reportKey] = reportMap;
+
+      final existingFindings = merged['findings'] is Map
+          ? Map<String, dynamic>.from(merged['findings'] as Map)
+          : <String, dynamic>{};
+
+      final computed = _findings.computeFindings(merged);
+      final findingsMap = _findings.mergeFindingsMap(
+        computed: computed,
+        existing: existingFindings,
+      );
+
+      await ref.update({
+        'findings': findingsMap,
+        'updatedAt': DateTime.now().toIso8601String(),
+      });
+
+      // Insights regenerate only when the active-findings fingerprint changes.
+      // Non-blocking — report save already succeeded.
+      merged['findings'] = findingsMap;
+      // ignore: unawaited_futures
+      _insights.refreshIfFindingsChanged(merged).catchError((Object e) async {
+        debugPrint('Insights refresh failed: $e');
+        // Drop stale cards so Insights never shows an older CBC's numbers.
+        try {
+          await ref.update({
+            'insights': {
+              'fingerprint': '',
+              'cards': <Map<String, dynamic>>[],
+              'generatedAt': DateTime.now().toIso8601String(),
+              'stale': true,
+            },
+            'insights_meta': {
+              'fingerprint': '',
+              'stale': true,
+              'error': e.toString(),
+            },
+            'updatedAt': DateTime.now().toIso8601String(),
+          });
+        } catch (_) {}
+        return const InsightsBundle(fingerprint: '', cards: []);
+      });
+    } catch (e) {
+      // Findings must not block report save success.
+      debugPrint('Findings recompute failed: $e');
+    }
+  }
+
+  /// Active findings for the signed-in user (empty if none / not signed in).
+  Future<List<Finding>> fetchActiveFindings() async {
+    final ref = _userRef();
+    if (ref == null) return [];
+    try {
+      final snap = await ref.get();
+      if (!snap.exists) return [];
+      final data = snap.data() ?? {};
+      final raw = data['findings'];
+      if (raw is! Map) return [];
+      return _findings.parseFindingsMap(
+        Map<String, dynamic>.from(raw),
+        activeOnly: true,
+      );
+    } catch (_) {
+      return [];
+    }
+  }
+
   Future<void> setStarred({
     required String reportId,
     required bool starred,
   }) async {
-    final user = _auth.currentUser;
-    if (user == null) {
+    final ref = _userRef();
+    if (ref == null) {
       throw ReportsException('Sign in to update starred reports.');
     }
 
+    final parts = reportId.split('/');
+    if (parts.length < 2) {
+      throw ReportsException('Invalid report id.');
+    }
+    final reportKey = parts[0];
+    final dateKey = parts.sublist(1).join('/');
+
     try {
-      await _reportsRef(user.uid).doc(reportId).set(
-        {
-          'isStarred': starred,
-          'starred': starred,
-        },
-        SetOptions(merge: true),
-      );
+      await ref.update({
+        FieldPath([reportKey, dateKey, 'isStarred']): starred,
+        'updatedAt': DateTime.now().toIso8601String(),
+      });
     } on FirebaseException catch (e) {
       throw ReportsException(
         e.message ?? 'Could not update star status.',
@@ -120,53 +237,47 @@ class ReportsService {
   }
 
   Future<List<MedicalReport>> fetchReports({ReportCategory? category}) async {
-    final user = _auth.currentUser;
-    if (user == null) return [];
-
-    List<MedicalReport> sortReports(List<MedicalReport> reports) {
-      reports.sort((a, b) {
-        if (a.isStarred != b.isStarred) {
-          return a.isStarred ? -1 : 1;
-        }
-        return b.createdAt.compareTo(a.createdAt);
-      });
-      return reports;
-    }
+    final ref = _userRef();
+    if (ref == null) return [];
 
     try {
-      Query<Map<String, dynamic>> query = _reportsRef(user.uid);
-      if (category != null) {
-        query = query.where('category', isEqualTo: category.storageValue);
-      }
-      final snapshot = await query.orderBy('createdAt', descending: true).get();
+      final snap = await ref.get();
+      if (!snap.exists) return [];
+      final data = snap.data() ?? {};
+      final reports = <MedicalReport>[];
 
-      return sortReports(
-        snapshot.docs
-            .map(
-              (doc) => MedicalReport.fromFirestore(
-                id: doc.id,
-                data: doc.data(),
-              ),
-            )
-            .toList(),
+      data.forEach((key, value) {
+        if (UserProfile.profileFieldKeys.contains(key)) return;
+        if (value is! Map) return;
+
+        final byDate = Map<String, dynamic>.from(value);
+        byDate.forEach((dateKey, reportRaw) {
+          if (reportRaw is! Map) return;
+          final report = MedicalReport.fromUsersNested(
+            reportKey: key,
+            dateKey: dateKey.toString(),
+            data: Map<String, dynamic>.from(reportRaw),
+          );
+          if (category == null || report.category == category) {
+            reports.add(report);
+          }
+        });
+      });
+
+      reports.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return reports;
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        throw ReportsException(
+          'Firestore permission denied. Allow reads on USERS/{email}.',
+        );
+      }
+      throw ReportsException(
+        e.message ?? 'Could not load reports.',
       );
-    } catch (_) {
-      // Fallback if composite index is missing or field absent.
-      final snapshot = await _reportsRef(user.uid).get();
-      final reports = snapshot.docs
-          .map(
-            (doc) => MedicalReport.fromFirestore(
-              id: doc.id,
-              data: doc.data(),
-            ),
-          )
-          .where((r) => category == null || r.category == category)
-          .toList();
-      return sortReports(reports);
     }
   }
 
-  /// Most recently uploaded report (optionally within a category).
   Future<MedicalReport?> fetchLatestReport({ReportCategory? category}) async {
     final reports = await fetchReports(category: category);
     if (reports.isEmpty) return null;

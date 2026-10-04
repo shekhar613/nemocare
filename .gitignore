@@ -49,4 +49,12 @@ app.*.map.json
 .env.*
 *.pem
 lib/config/groq_secrets.dart
+lib/config/nvidia_secrets.dart
+lib/config/tavily_secrets.dart
+
+# Backend
+backend/node_modules/
+backend/serviceAccountKey.json
+backend/firebase-service-account.json
+*firebase-adminsdk*.json
 

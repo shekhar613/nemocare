@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../theme/app_theme.dart';
+import '../widgets/app_logo.dart';
 import 'auth_screen.dart';
 import 'home_screen.dart';
 
@@ -144,28 +145,19 @@ class _SplashScreenState extends State<SplashScreen>
                         child: Transform.scale(
                           scale: _logoScale.value,
                           child: Container(
-                            width: 96,
-                            height: 96,
+                            width: 148,
+                            height: 148,
                             decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white.withValues(alpha: 0.16),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.35),
-                                width: 1.5,
-                              ),
+                              borderRadius: BorderRadius.circular(34),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.12),
-                                  blurRadius: 28,
-                                  offset: const Offset(0, 12),
+                                  color: Colors.black.withValues(alpha: 0.22),
+                                  blurRadius: 32,
+                                  offset: const Offset(0, 14),
                                 ),
                               ],
                             ),
-                            child: const Icon(
-                              Icons.favorite_rounded,
-                              color: Colors.white,
-                              size: 44,
-                            ),
+                            child: const AppLogoMark(size: 148),
                           ),
                         ),
                       ),

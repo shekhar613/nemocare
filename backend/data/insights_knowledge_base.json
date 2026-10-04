@@ -1,0 +1,877 @@
+{
+  "_readme": "Curated knowledge base for Nemo Care's Insights engine. Each parameter has low/high state entries (normal states generally produce no insight, so are omitted unless noted). Each entry is deliberately conservative and uses associative language ('may', 'associated with') rather than diagnostic claims — this is intentional and should be preserved by the insight writer agent. 'sourceOrganizations' names the general body whose guidelines back the claim; before shipping, replace with a specific cited URL (use the KB curator agent + Tavily to fetch one, then have a human approve it, as per the original design). ageConsiderations and recommendedFollowUpTests are the fields the findings engine + insight writer use most directly for the Glaucoma-style example.",
+
+  "parameters": [
+
+    {
+      "parameterKey": "blood_glucose",
+      "displayName": "Blood Glucose (Fasting/Random/HbA1c)",
+      "states": {
+        "high": {
+          "findingKey": "high_blood_sugar",
+          "severityNote": "Distinguish borderline (prediabetic range) from clearly elevated — severity changes urgency of language.",
+          "commonCauses": [
+            "Insulin resistance or early/established type 2 diabetes",
+            "Undertreated or undiagnosed diabetes",
+            "Steroid medications",
+            "Pancreatic conditions",
+            "Acute illness or stress (transient)",
+            "High-carbohydrate diet combined with low physical activity"
+          ],
+          "possibleEffects": [
+            "Increased thirst, frequent urination, fatigue",
+            "Blurred vision",
+            "Slow-healing cuts or frequent infections",
+            "Over years: damage to blood vessels and nerves (diabetic complications)"
+          ],
+          "ageConsiderations": [
+            {
+              "ageRange": "45+",
+              "note": "Long-standing elevated glucose is associated with a higher risk of diabetic retinopathy and a modestly increased risk of glaucoma and cataracts, due to chronic damage to small blood vessels in the eye."
+            },
+            {
+              "ageRange": "45+",
+              "note": "Associated with higher risk of peripheral neuropathy (numbness/tingling in feet) with longer duration of elevated glucose."
+            },
+            {
+              "ageRange": "all adults",
+              "note": "Associated with increased cardiovascular risk, compounding with other risk factors like high cholesterol or high blood pressure."
+            }
+          ],
+          "recommendedFollowUpTests": [
+            "HbA1c (if only random/fasting glucose was tested) — shows 3-month average",
+            "Lipid profile — diabetes and high cholesterol often co-occur",
+            "Kidney function test (creatinine, eGFR, urine microalbumin) — screens for diabetic kidney involvement",
+            "Dilated eye exam — screens for diabetic retinopathy, especially if duration is unclear or age 40+",
+            "Foot sensation exam (if numbness/tingling reported)"
+          ],
+          "generalLifestyleNotes": [
+            "Post-meal short walks (10-15 min) are commonly associated with lower post-meal glucose spikes",
+            "Reducing refined sugar and simple carbohydrate intake",
+            "Regular physical activity and weight management where applicable"
+          ],
+          "evidenceLevel": "guideline",
+          "sourceOrganizations": ["American Diabetes Association (ADA)", "WHO", "ICMR (India-specific guidance)"]
+        },
+        "low": {
+          "findingKey": "low_blood_sugar",
+          "severityNote": "A single low reading from random testing is often less significant than a pattern; recurrent lows in a non-diabetic person warrant attention.",
+          "commonCauses": [
+            "Skipped meals or prolonged fasting",
+            "Excess diabetes medication/insulin relative to food intake (if on treatment)",
+            "Intense exercise without adequate food intake",
+            "Alcohol consumption without food",
+            "Rare: pancreatic or hormonal conditions"
+          ],
+          "possibleEffects": [
+            "Shakiness, sweating, dizziness, confusion",
+            "Palpitations",
+            "In severe cases: loss of consciousness (medical emergency)"
+          ],
+          "ageConsiderations": [
+            {
+              "ageRange": "65+",
+              "note": "Older adults may have blunted symptoms of low blood sugar, making recurrent lows more likely to go unnoticed and increasing fall risk."
+            }
+          ],
+          "recommendedFollowUpTests": [
+            "Repeat fasting glucose to confirm pattern vs one-off reading",
+            "Review of current medications if on diabetes treatment",
+            "HbA1c for overall glucose control context"
+          ],
+          "generalLifestyleNotes": [
+            "Regular meal timing",
+            "If on diabetes medication, discuss dosing with a doctor rather than self-adjusting"
+          ],
+          "evidenceLevel": "guideline",
+          "sourceOrganizations": ["American Diabetes Association (ADA)"]
+        }
+      }
+    },
+
+    {
+      "parameterKey": "blood_pressure",
+      "displayName": "Blood Pressure (Systolic/Diastolic)",
+      "states": {
+        "high": {
+          "findingKey": "high_blood_pressure",
+          "severityNote": "Stage matters: 130-139/80-89 (stage 1) vs 140+/90+ (stage 2) vs 180+/120+ (hypertensive crisis — needs urgent care, not a routine insight).",
+          "commonCauses": [
+            "Essential (primary) hypertension — often multifactorial: genetics, diet (high sodium), weight, stress",
+            "Kidney disease (secondary hypertension)",
+            "Thyroid disorders",
+            "Certain medications (NSAIDs, decongestants, some birth control)",
+            "Sleep apnea"
+          ],
+          "possibleEffects": [
+            "Often asymptomatic (\"silent\") in early stages",
+            "Headaches, in more severe elevation",
+            "Over years: increased risk of heart attack, stroke, kidney damage, vision changes"
+          ],
+          "ageConsiderations": [
+            {
+              "ageRange": "50+",
+              "note": "Associated with higher risk of hypertensive retinopathy (blood vessel changes in the eye) and increased cardiovascular and stroke risk with longer duration of uncontrolled hypertension."
+            }
+          ],
+          "recommendedFollowUpTests": [
+            "Repeat BP measurement on multiple occasions (single reading is not diagnostic)",
+            "Kidney function test (creatinine, urea)",
+            "Lipid profile",
+            "ECG, especially if symptoms present",
+            "Eye exam if longstanding/uncontrolled"
+          ],
+          "generalLifestyleNotes": [
+            "Reduced sodium intake",
+            "Regular aerobic activity",
+            "Limiting alcohol",
+            "Stress management"
+          ],
+          "evidenceLevel": "guideline",
+          "sourceOrganizations": ["American Heart Association (AHA)", "WHO"]
+        },
+        "low": {
+          "findingKey": "low_blood_pressure",
+          "commonCauses": [
+            "Dehydration",
+            "Certain medications (blood pressure meds, some antidepressants)",
+            "Prolonged bed rest",
+            "Endocrine conditions",
+            "Some individuals have naturally low baseline BP with no issue"
+          ],
+          "possibleEffects": [
+            "Dizziness or lightheadedness, especially on standing",
+            "Fatigue",
+            "In severe cases: fainting"
+          ],
+          "ageConsiderations": [
+            {
+              "ageRange": "65+",
+              "note": "Associated with higher fall risk due to orthostatic (postural) drops in blood pressure."
+            }
+          ],
+          "recommendedFollowUpTests": [
+            "Orthostatic BP check (lying vs standing)",
+            "Review of current medications",
+            "Thyroid function test"
+          ],
+          "evidenceLevel": "guideline",
+          "sourceOrganizations": ["American Heart Association (AHA)"]
+        }
+      }
+    },
+
+    {
+      "parameterKey": "creatinine_serum",
+      "displayName": "Serum Creatinine (Kidney Function)",
+      "states": {
+        "high": {
+          "findingKey": "high_creatinine",
+          "severityNote": "Correlate with eGFR if available — a more direct kidney function measure than creatinine alone.",
+          "commonCauses": [
+            "Reduced kidney function (acute or chronic kidney disease)",
+            "Dehydration",
+            "High-protein diet or intense muscle exertion (transient)",
+            "Certain medications (NSAIDs, some antibiotics)",
+            "Longstanding uncontrolled diabetes or hypertension (leading causes of chronic kidney disease)"
+          ],
+          "possibleEffects": [
+            "Often asymptomatic until significantly elevated",
+            "Fatigue, swelling (edema), changes in urination with more advanced reduction in kidney function"
+          ],
+          "ageConsiderations": [
+            {
+              "ageRange": "all adults",
+              "note": "Particularly relevant if the patient also has high blood sugar or high blood pressure — these together are the leading causes of progressive kidney function decline."
+            }
+          ],
+          "recommendedFollowUpTests": [
+            "eGFR (often calculated automatically alongside creatinine)",
+            "Urine microalbumin/protein test",
+            "Blood urea / BUN",
+            "Electrolytes (potassium, sodium)",
+            "Repeat test after ensuring adequate hydration, to rule out a transient cause"
+          ],
+          "evidenceLevel": "guideline",
+          "sourceOrganizations": ["KDIGO (Kidney Disease: Improving Global Outcomes)", "National Kidney Foundation"]
+        }
+      }
+    },
+
+    {
+      "parameterKey": "blood_urea",
+      "displayName": "Blood Urea / BUN",
+      "states": {
+        "high": {
+          "findingKey": "high_urea",
+          "commonCauses": [
+            "Reduced kidney function",
+            "Dehydration",
+            "High-protein diet",
+            "Gastrointestinal bleeding (less common)",
+            "Heart failure (reduced blood flow to kidneys)"
+          ],
+          "possibleEffects": [
+            "Often correlates with symptoms related to its underlying cause rather than urea itself"
+          ],
+          "recommendedFollowUpTests": [
+            "Creatinine and eGFR together for a fuller kidney function picture",
+            "Hydration status review"
+          ],
+          "evidenceLevel": "guideline",
+          "sourceOrganizations": ["National Kidney Foundation"]
+        },
+        "low": {
+          "findingKey": "low_urea",
+          "commonCauses": [
+            "Low-protein diet",
+            "Liver disease (reduced urea production)",
+            "Overhydration",
+            "Pregnancy (normal physiological change)"
+          ],
+          "possibleEffects": [
+            "Usually not significant in isolation"
+          ],
+          "evidenceLevel": "moderate",
+          "sourceOrganizations": ["National Kidney Foundation"]
+        }
+      }
+    },
+
+    {
+      "parameterKey": "uric_acid",
+      "displayName": "Uric Acid",
+      "states": {
+        "high": {
+          "findingKey": "high_uric_acid",
+          "commonCauses": [
+            "Diet high in purines (red meat, organ meat, certain seafood, alcohol especially beer)",
+            "Reduced kidney excretion of uric acid",
+            "Obesity and metabolic syndrome",
+            "Certain medications (some diuretics)"
+          ],
+          "possibleEffects": [
+            "Gout — sudden, severe joint pain and swelling, classically in the big toe",
+            "Uric acid kidney stones",
+            "Often asymptomatic (\"hyperuricemia\") without ever causing gout"
+          ],
+          "ageConsiderations": [
+            {
+              "ageRange": "40+",
+              "note": "Risk of gout flare-ups and kidney stone formation increases with longstanding elevated uric acid."
+            }
+          ],
+          "recommendedFollowUpTests": [
+            "Kidney function test (creatinine, eGFR) — elevated uric acid and reduced kidney function often occur together",
+            "Joint exam if any joint pain/swelling present"
+          ],
+          "generalLifestyleNotes": [
+            "Reducing purine-rich foods and alcohol (especially beer)",
+            "Adequate hydration"
+          ],
+          "evidenceLevel": "guideline",
+          "sourceOrganizations": ["American College of Rheumatology"]
+        },
+        "low": {
+          "findingKey": "low_uric_acid",
+          "commonCauses": [
+            "Rare in isolation",
+            "Certain genetic conditions",
+            "Some medications"
+          ],
+          "possibleEffects": ["Usually not clinically significant on its own"],
+          "evidenceLevel": "moderate",
+          "sourceOrganizations": ["American College of Rheumatology"]
+        }
+      }
+    },
+
+    {
+      "parameterKey": "urine_protein",
+      "displayName": "Protein in Urine (Proteinuria)",
+      "states": {
+        "high": {
+          "findingKey": "proteinuria_present",
+          "severityNote": "Even trace/mild proteinuria in a patient with diabetes or hypertension is clinically meaningful and worth flagging prominently — it's an early kidney-involvement signal.",
+          "commonCauses": [
+            "Early kidney involvement from diabetes or high blood pressure",
+            "Urinary tract infection",
+            "Dehydration or intense exercise (transient, benign)",
+            "Kidney disease (various causes)",
+            "Fever (transient)"
+          ],
+          "possibleEffects": [
+            "Often no symptoms at mild levels",
+            "Foamy urine, swelling (edema) at higher levels",
+            "Early marker of kidney damage, particularly important for patients with diabetes or hypertension"
+          ],
+          "recommendedFollowUpTests": [
+            "Repeat urine test to confirm (not a one-off cause like exercise/fever)",
+            "Urine microalbumin-to-creatinine ratio (more precise than dipstick)",
+            "Kidney function test (creatinine, eGFR)",
+            "Blood pressure and blood glucose review, since both are common underlying drivers"
+          ],
+          "evidenceLevel": "guideline",
+          "sourceOrganizations": ["KDIGO", "National Kidney Foundation"]
+        }
+      }
+    },
+
+    {
+      "parameterKey": "cholesterol_total_ldl",
+      "displayName": "Total Cholesterol / LDL",
+      "states": {
+        "high": {
+          "findingKey": "high_cholesterol",
+          "commonCauses": [
+            "Diet high in saturated/trans fats",
+            "Sedentary lifestyle",
+            "Genetics (familial hypercholesterolemia)",
+            "Diabetes or hypothyroidism (secondary causes)",
+            "Smoking (lowers HDL, worsens overall profile)"
+          ],
+          "possibleEffects": [
+            "Usually asymptomatic",
+            "Over years: contributes to atherosclerosis (plaque buildup in arteries), raising risk of heart attack and stroke"
+          ],
+          "ageConsiderations": [
+            {
+              "ageRange": "40+",
+              "note": "Cardiovascular risk from elevated LDL compounds significantly with age, smoking status, and other risk factors like high blood sugar or high blood pressure."
+            }
+          ],
+          "recommendedFollowUpTests": [
+            "Full lipid profile (LDL, HDL, triglycerides) if only total cholesterol was tested",
+            "Blood glucose/HbA1c — cholesterol and glucose abnormalities often co-occur",
+            "Thyroid function test (TSH) — hypothyroidism can elevate cholesterol",
+            "ECG or cardiac risk assessment if multiple risk factors present"
+          ],
+          "generalLifestyleNotes": [
+            "Reducing saturated/trans fat intake",
+            "Regular aerobic exercise",
+            "Smoking cessation where applicable"
+          ],
+          "evidenceLevel": "guideline",
+          "sourceOrganizations": ["American Heart Association (AHA)", "ACC/AHA Cholesterol Guidelines"]
+        }
+      }
+    },
+
+    {
+      "parameterKey": "hdl_cholesterol",
+      "displayName": "HDL Cholesterol (\"good\" cholesterol)",
+      "states": {
+        "low": {
+          "findingKey": "low_hdl",
+          "commonCauses": [
+            "Sedentary lifestyle",
+            "Smoking",
+            "Obesity",
+            "Type 2 diabetes",
+            "Genetics"
+          ],
+          "possibleEffects": [
+            "Low HDL alone is usually asymptomatic but is an independent cardiovascular risk factor, especially combined with high LDL or triglycerides"
+          ],
+          "recommendedFollowUpTests": [
+            "Full lipid profile for complete risk picture",
+            "Blood glucose/HbA1c"
+          ],
+          "generalLifestyleNotes": [
+            "Regular aerobic exercise is one of the more consistently effective ways to raise HDL",
+            "Smoking cessation"
+          ],
+          "evidenceLevel": "guideline",
+          "sourceOrganizations": ["American Heart Association (AHA)"]
+        }
+      }
+    },
+
+    {
+      "parameterKey": "triglycerides",
+      "displayName": "Triglycerides",
+      "states": {
+        "high": {
+          "findingKey": "high_triglycerides",
+          "commonCauses": [
+            "High intake of sugar and refined carbohydrates",
+            "Excess alcohol consumption",
+            "Obesity, sedentary lifestyle",
+            "Poorly controlled diabetes",
+            "Genetics"
+          ],
+          "possibleEffects": [
+            "Usually asymptomatic",
+            "Very high levels (severely elevated) can rarely cause pancreatitis",
+            "Contributes to cardiovascular risk, especially combined with low HDL and high LDL (a common combination called atherogenic dyslipidemia)"
+          ],
+          "recommendedFollowUpTests": [
+            "Full lipid profile",
+            "Blood glucose/HbA1c — strong link with insulin resistance",
+            "Liver function test — fatty liver often co-occurs with high triglycerides"
+          ],
+          "generalLifestyleNotes": [
+            "Reducing sugar, refined carbs, and alcohol",
+            "Regular physical activity"
+          ],
+          "evidenceLevel": "guideline",
+          "sourceOrganizations": ["American Heart Association (AHA)"]
+        }
+      }
+    },
+
+    {
+      "parameterKey": "iron_ferritin",
+      "displayName": "Iron / Ferritin",
+      "states": {
+        "low": {
+          "findingKey": "low_iron",
+          "commonCauses": [
+            "Inadequate dietary iron intake",
+            "Chronic blood loss (heavy menstrual periods, GI bleeding)",
+            "Pregnancy (increased demand)",
+            "Poor absorption (certain GI conditions)"
+          ],
+          "possibleEffects": [
+            "Fatigue, weakness",
+            "Shortness of breath on exertion",
+            "Pale skin, cold hands/feet",
+            "Brittle nails, hair thinning",
+            "Restless legs, in some cases"
+          ],
+          "recommendedFollowUpTests": [
+            "Complete Blood Count (hemoglobin, MCV, MCH) if not already done — iron deficiency classically shows low MCV/MCH",
+            "Ferritin specifically (a more direct marker of iron stores than serum iron alone)",
+            "Investigation of source if chronic blood loss suspected (e.g. heavy periods, GI evaluation)"
+          ],
+          "evidenceLevel": "guideline",
+          "sourceOrganizations": ["WHO", "NIH Office of Dietary Supplements"]
+        },
+        "high": {
+          "findingKey": "high_iron",
+          "commonCauses": [
+            "Hemochromatosis (genetic iron overload)",
+            "Excessive iron supplementation",
+            "Repeated blood transfusions"
+          ],
+          "possibleEffects": [
+            "Fatigue, joint pain",
+            "Over years: potential liver, heart, or pancreas involvement if untreated"
+          ],
+          "recommendedFollowUpTests": [
+            "Repeat ferritin and transferrin saturation",
+            "Liver function test",
+            "Genetic testing for hemochromatosis, if pattern suggests it"
+          ],
+          "evidenceLevel": "moderate",
+          "sourceOrganizations": ["American Society of Hematology"]
+        }
+      }
+    },
+
+    {
+      "parameterKey": "magnesium",
+      "displayName": "Magnesium",
+      "states": {
+        "low": {
+          "findingKey": "low_magnesium",
+          "commonCauses": [
+            "Inadequate dietary intake",
+            "Chronic diarrhea or GI malabsorption",
+            "Certain diuretics",
+            "Poorly controlled diabetes (increased urinary loss)",
+            "Chronic alcohol use"
+          ],
+          "possibleEffects": [
+            "Muscle cramps or twitches",
+            "Fatigue despite adequate sleep duration",
+            "Poor sleep quality",
+            "In more significant deficiency: irregular heartbeat, numbness/tingling"
+          ],
+          "recommendedFollowUpTests": [
+            "Calcium and potassium levels — these electrolytes often move together",
+            "Kidney function test"
+          ],
+          "evidenceLevel": "guideline",
+          "sourceOrganizations": ["NIH Office of Dietary Supplements"]
+        },
+        "high": {
+          "findingKey": "high_magnesium",
+          "commonCauses": [
+            "Reduced kidney function (most common cause)",
+            "Excessive magnesium supplement or antacid use"
+          ],
+          "possibleEffects": [
+            "Often asymptomatic at mild elevation",
+            "Nausea, muscle weakness at higher levels"
+          ],
+          "recommendedFollowUpTests": [
+            "Kidney function test (creatinine, eGFR)"
+          ],
+          "evidenceLevel": "moderate",
+          "sourceOrganizations": ["NIH Office of Dietary Supplements"]
+        }
+      }
+    },
+
+    {
+      "parameterKey": "calcium",
+      "displayName": "Calcium (Serum)",
+      "states": {
+        "low": {
+          "findingKey": "low_calcium",
+          "commonCauses": [
+            "Vitamin D deficiency (reduces calcium absorption)",
+            "Parathyroid gland disorders",
+            "Chronic kidney disease",
+            "Inadequate dietary calcium intake"
+          ],
+          "possibleEffects": [
+            "Muscle cramps, tingling around mouth/fingers",
+            "Over years: contributes to reduced bone density"
+          ],
+          "recommendedFollowUpTests": [
+            "Vitamin D level — frequently the underlying cause",
+            "Parathyroid hormone (PTH) level if low calcium persists",
+            "Kidney function test"
+          ],
+          "evidenceLevel": "guideline",
+          "sourceOrganizations": ["NIH Office of Dietary Supplements", "Endocrine Society"]
+        },
+        "high": {
+          "findingKey": "high_calcium",
+          "commonCauses": [
+            "Overactive parathyroid gland (most common cause)",
+            "Excess vitamin D supplementation",
+            "Certain cancers (less common)",
+            "Prolonged immobilization"
+          ],
+          "possibleEffects": [
+            "Fatigue, constipation",
+            "Increased thirst and urination",
+            "Kidney stones with prolonged elevation"
+          ],
+          "recommendedFollowUpTests": [
+            "Parathyroid hormone (PTH) level",
+            "Kidney function test",
+            "Vitamin D level"
+          ],
+          "evidenceLevel": "guideline",
+          "sourceOrganizations": ["Endocrine Society"]
+        }
+      }
+    },
+
+    {
+      "parameterKey": "vitamin_d",
+      "displayName": "Vitamin D (25-OH)",
+      "states": {
+        "low": {
+          "findingKey": "low_vitamin_d",
+          "commonCauses": [
+            "Limited sun exposure",
+            "Diet low in vitamin D-rich foods",
+            "Darker skin (reduces skin synthesis efficiency)",
+            "Obesity (vitamin D is sequestered in fat tissue)",
+            "Malabsorption conditions"
+          ],
+          "possibleEffects": [
+            "Fatigue, low mood",
+            "Bone/muscle aches",
+            "Over years: contributes to reduced bone density, increased fracture risk",
+            "Associated with lower calcium absorption, compounding bone health effects"
+          ],
+          "recommendedFollowUpTests": [
+            "Calcium level",
+            "Bone density scan (DEXA) if risk factors for osteoporosis present, especially in older adults"
+          ],
+          "generalLifestyleNotes": [
+            "Moderate safe sun exposure",
+            "Dietary sources: fatty fish, fortified foods"
+          ],
+          "evidenceLevel": "guideline",
+          "sourceOrganizations": ["NIH Office of Dietary Supplements", "Endocrine Society"]
+        }
+      }
+    },
+
+    {
+      "parameterKey": "vitamin_b12",
+      "displayName": "Vitamin B12",
+      "states": {
+        "low": {
+          "findingKey": "low_b12",
+          "commonCauses": [
+            "Vegetarian/vegan diet without supplementation (B12 is mainly found in animal products)",
+            "Pernicious anemia (autoimmune, reduces absorption)",
+            "Long-term use of certain medications (e.g. metformin, acid-reducing drugs)",
+            "Age-related reduced absorption"
+          ],
+          "possibleEffects": [
+            "Fatigue, weakness",
+            "Numbness/tingling in hands or feet",
+            "Memory difficulties, mood changes",
+            "In combination with low iron: compounded fatigue and reduced exercise tolerance"
+          ],
+          "ageConsiderations": [
+            {
+              "ageRange": "60+",
+              "note": "Age-related reduced stomach acid can impair B12 absorption even with adequate dietary intake, making deficiency more common in older adults."
+            }
+          ],
+          "recommendedFollowUpTests": [
+            "Complete Blood Count (B12 deficiency can cause macrocytic — large RBC — anemia, the opposite pattern from iron deficiency)",
+            "Folate level (often tested alongside B12)",
+            "Methylmalonic acid (MMA), in cases of borderline B12 with symptoms, for more sensitive detection"
+          ],
+          "evidenceLevel": "guideline",
+          "sourceOrganizations": ["NIH Office of Dietary Supplements"]
+        }
+      }
+    },
+
+    {
+      "parameterKey": "hemoglobin",
+      "displayName": "Hemoglobin / RBC Count",
+      "states": {
+        "low": {
+          "findingKey": "low_hemoglobin",
+          "commonCauses": [
+            "Iron deficiency (most common cause worldwide)",
+            "Vitamin B12 or folate deficiency",
+            "Chronic disease (kidney disease, chronic inflammation)",
+            "Blood loss (menstrual, GI)",
+            "Bone marrow conditions (less common)"
+          ],
+          "possibleEffects": [
+            "Fatigue, weakness",
+            "Shortness of breath on exertion",
+            "Pale skin, dizziness",
+            "Reduced exercise tolerance"
+          ],
+          "recommendedFollowUpTests": [
+            "MCV/MCH (from the same CBC) to narrow down the likely cause — low MCV suggests iron deficiency, high MCV suggests B12/folate deficiency",
+            "Ferritin and iron studies",
+            "Vitamin B12 and folate levels",
+            "Investigation of blood loss source if indicated by history"
+          ],
+          "evidenceLevel": "guideline",
+          "sourceOrganizations": ["WHO", "American Society of Hematology"]
+        },
+        "high": {
+          "findingKey": "high_hemoglobin",
+          "commonCauses": [
+            "Dehydration (relative concentration, not a true increase)",
+            "Chronic smoking",
+            "Living at high altitude",
+            "Lung or heart conditions causing chronically low oxygen",
+            "Polycythemia vera (rare bone marrow condition)"
+          ],
+          "possibleEffects": [
+            "Often asymptomatic",
+            "Headaches, dizziness, in more significant elevation",
+            "Increased risk of blood clots at very high levels"
+          ],
+          "recommendedFollowUpTests": [
+            "Repeat test after ensuring adequate hydration",
+            "Oxygen saturation (SpO2)",
+            "Review of smoking history"
+          ],
+          "evidenceLevel": "moderate",
+          "sourceOrganizations": ["American Society of Hematology"]
+        }
+      }
+    },
+
+    {
+      "parameterKey": "mcv_mch_pattern",
+      "displayName": "MCV + MCH (red cell indices)",
+      "states": {
+        "low": {
+          "findingKey": "microcytic_pattern",
+          "severityNote": "Both MCV and MCH below reference together form a microcytic / hypochromic pattern. Interpret with the latest CBC only.",
+          "commonCauses": [
+            "Iron deficiency (most common educational association)",
+            "Thalassemia trait",
+            "Anemia of chronic disease (some cases)"
+          ],
+          "possibleEffects": [
+            "Often linked educationally with iron-deficiency anemia patterns",
+            "Fatigue or reduced exercise tolerance when hemoglobin is also low"
+          ],
+          "recommendedFollowUpTests": [
+            "Ferritin and iron studies",
+            "Review hemoglobin trend on the same CBC",
+            "Discuss with a clinician before starting iron supplements"
+          ],
+          "generalLifestyleNotes": [
+            "Iron-rich foods may be discussed when clinically appropriate",
+            "Do not self-start high-dose iron without medical advice"
+          ],
+          "evidenceLevel": "guideline",
+          "sourceOrganizations": ["WHO", "American Society of Hematology"]
+        }
+      }
+    },
+
+    {
+      "parameterKey": "neutrophils",
+      "displayName": "Neutrophil percentage / count",
+      "states": {
+        "high": {
+          "findingKey": "high_neutrophils",
+          "severityNote": "A high neutrophil percentage is a lab pattern, not a diagnosis. Correlate with symptoms and absolute counts.",
+          "commonCauses": [
+            "Infection or inflammation",
+            "Physical or emotional stress",
+            "Medications (e.g. corticosteroids)",
+            "Smoking"
+          ],
+          "possibleEffects": [
+            "Often reflects the body's response to illness or stress",
+            "Persistent elevation may warrant clinical correlation"
+          ],
+          "recommendedFollowUpTests": [
+            "Repeat CBC if unexpected",
+            "Clinical review for fever, recent illness, or medications"
+          ],
+          "evidenceLevel": "moderate",
+          "sourceOrganizations": ["American Society of Hematology"]
+        }
+      }
+    }
+  ],
+
+  "combinations": [
+    {
+      "comboKey": "high_blood_sugar+high_cholesterol",
+      "requiredFindings": ["high_blood_sugar", "high_cholesterol"],
+      "title": "Elevated blood sugar and cholesterol together",
+      "combinedRisk": "This combination is a recognized pattern (often part of what's called metabolic syndrome) and is associated with meaningfully higher cardiovascular risk than either finding alone, plus an increased likelihood of fatty liver disease.",
+      "possibleEffects": [
+        "Higher combined risk of heart attack and stroke than either factor individually",
+        "Non-alcoholic fatty liver disease is commonly associated with this combination",
+        "Accelerated blood vessel damage, compounding risk to eyes, kidneys, and nerves"
+      ],
+      "recommendedFollowUpTests": [
+        "Liver function test (fatty liver screening)",
+        "HbA1c for glucose control overview",
+        "Full lipid profile (LDL, HDL, triglycerides) if not already complete",
+        "ECG or cardiac risk assessment",
+        "Waist circumference / BMI as part of metabolic syndrome criteria"
+      ],
+      "evidenceLevel": "guideline",
+      "sourceOrganizations": ["American Heart Association (AHA)", "IDF Metabolic Syndrome Criteria"]
+    },
+    {
+      "comboKey": "high_blood_sugar+age_45plus",
+      "requiredFindings": ["high_blood_sugar"],
+      "requiredProfile": { "minAge": 45 },
+      "title": "Elevated blood sugar in patients 45 and older",
+      "combinedRisk": "Longer probable duration of elevated glucose in this age group raises the relevance of eye, kidney, and nerve screening, since diabetic complications develop over years.",
+      "possibleEffects": [
+        "Higher associated risk of diabetic retinopathy and, less directly, glaucoma and cataracts",
+        "Higher associated risk of diabetic kidney involvement",
+        "Higher associated risk of peripheral neuropathy"
+      ],
+      "recommendedFollowUpTests": [
+        "Dilated eye exam",
+        "Urine microalbumin test",
+        "Foot sensation exam"
+      ],
+      "evidenceLevel": "guideline",
+      "sourceOrganizations": ["American Diabetes Association (ADA)"]
+    },
+    {
+      "comboKey": "high_creatinine+high_blood_pressure",
+      "requiredFindings": ["high_creatinine", "high_blood_pressure"],
+      "title": "Reduced kidney function with elevated blood pressure",
+      "combinedRisk": "These two commonly reinforce each other — reduced kidney function can raise blood pressure, and uncontrolled blood pressure accelerates kidney function decline — making this combination worth closer monitoring than either alone.",
+      "possibleEffects": [
+        "Faster progression of chronic kidney disease if blood pressure remains uncontrolled",
+        "Increased cardiovascular risk"
+      ],
+      "recommendedFollowUpTests": [
+        "eGFR trend over time (not just a single reading)",
+        "Urine microalbumin/protein test",
+        "Electrolyte panel"
+      ],
+      "evidenceLevel": "guideline",
+      "sourceOrganizations": ["KDIGO"]
+    },
+    {
+      "comboKey": "low_iron+low_magnesium",
+      "requiredFindings": ["low_iron", "low_magnesium"],
+      "title": "Low iron and low magnesium together",
+      "combinedRisk": "Both deficiencies independently cause fatigue through different mechanisms (reduced oxygen-carrying capacity vs muscle/nerve and sleep-quality effects), so together they are commonly associated with more pronounced tiredness than either alone — including feeling unrested even after adequate sleep duration.",
+      "possibleEffects": [
+        "Persistent fatigue despite sufficient sleep hours",
+        "Muscle cramps combined with reduced exercise tolerance",
+        "Poor sleep quality contributing further to daytime tiredness"
+      ],
+      "recommendedFollowUpTests": [
+        "Ferritin and full iron studies",
+        "Magnesium and calcium levels",
+        "Review of diet for both nutrients"
+      ],
+      "evidenceLevel": "moderate",
+      "sourceOrganizations": ["NIH Office of Dietary Supplements"]
+    },
+    {
+      "comboKey": "high_uric_acid+high_creatinine",
+      "requiredFindings": ["high_uric_acid", "high_creatinine"],
+      "title": "Elevated uric acid with reduced kidney function",
+      "combinedRisk": "Reduced kidney function lowers uric acid excretion, often elevating it further, while elevated uric acid itself can contribute to kidney stone formation — a self-reinforcing pattern worth monitoring together.",
+      "possibleEffects": [
+        "Higher risk of gout flare-ups",
+        "Higher risk of uric acid kidney stones"
+      ],
+      "recommendedFollowUpTests": [
+        "eGFR trend",
+        "Joint exam if any pain/swelling present",
+        "Kidney ultrasound if stone symptoms present"
+      ],
+      "evidenceLevel": "moderate",
+      "sourceOrganizations": ["American College of Rheumatology", "National Kidney Foundation"]
+    },
+    {
+      "comboKey": "low_calcium+low_vitamin_d",
+      "requiredFindings": ["low_calcium", "low_vitamin_d"],
+      "title": "Low calcium and low vitamin D together",
+      "combinedRisk": "Vitamin D is required for calcium absorption, so these two commonly occur together and compound each other's effect on bone health over time.",
+      "possibleEffects": [
+        "Increased risk of reduced bone density and fractures over time",
+        "Muscle cramps and bone/muscle aches"
+      ],
+      "ageConsiderations": [
+        {
+          "ageRange": "50+",
+          "note": "This combination is particularly relevant for bone density screening in postmenopausal women and older adults generally."
+        }
+      ],
+      "recommendedFollowUpTests": [
+        "Bone density scan (DEXA), especially in postmenopausal women or adults 50+",
+        "Parathyroid hormone (PTH) level"
+      ],
+      "evidenceLevel": "guideline",
+      "sourceOrganizations": ["Endocrine Society"]
+    },
+    {
+      "comboKey": "low_hemoglobin+low_b12",
+      "requiredFindings": ["low_hemoglobin", "low_b12"],
+      "title": "Low hemoglobin with low vitamin B12",
+      "combinedRisk": "B12 deficiency is itself a cause of anemia (typically with large red blood cells/high MCV), so this combination points toward B12 deficiency as a likely contributor to the low hemoglobin, rather than two unrelated findings.",
+      "possibleEffects": [
+        "Compounded fatigue and reduced exercise tolerance",
+        "Neurological symptoms (numbness/tingling, memory difficulty) in addition to anemia symptoms"
+      ],
+      "recommendedFollowUpTests": [
+        "MCV from the CBC — high MCV supports a B12/folate-related cause",
+        "Folate level",
+        "Methylmalonic acid (MMA) if B12 is borderline"
+      ],
+      "evidenceLevel": "guideline",
+      "sourceOrganizations": ["American Society of Hematology"]
+    }
+  ]
+}

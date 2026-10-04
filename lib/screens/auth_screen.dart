@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_logo.dart';
 import 'home_screen.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -399,19 +400,7 @@ class _BrandHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [AppColors.teal, AppColors.deepTeal],
-            ),
-          ),
-          child: const Icon(Icons.favorite_rounded, color: Colors.white, size: 24),
-        ),
+        const AppLogoMark(size: 56),
         const SizedBox(width: 12),
         Text(
           'Nemo Care',

@@ -1,0 +1,130 @@
+{
+  "low_hemoglobin": {
+    "findingKey": "low_hemoglobin",
+    "title": "Low hemoglobin",
+    "summary": "Hemoglobin below the lab reference range can relate to anemia. Common educational themes include fatigue, reduced exercise tolerance, and the need to identify underlying causes with a clinician.",
+    "risks": [
+      "Persistent low hemoglobin may be associated with iron deficiency or other causes of anemia",
+      "Symptoms can include tiredness, shortness of breath on exertion, and pale skin"
+    ],
+    "remedies": [
+      "Discuss results with a clinician before starting supplements",
+      "A balanced diet with iron-rich foods may be discussed when appropriate",
+      "Follow-up labs are often used to track trends"
+    ],
+    "tags": ["anemia", "hemoglobin", "cbc"],
+    "sources": [
+      "https://www.nhlbi.nih.gov/health/anemia",
+      "https://medlineplus.gov/anemia.html"
+    ]
+  },
+  "microcytic_pattern": {
+    "findingKey": "microcytic_pattern",
+    "title": "Low MCV with low MCH",
+    "summary": "When mean corpuscular volume (MCV) and mean corpuscular hemoglobin (MCH) are both low, labs often describe a microcytic pattern. Iron deficiency is a commonly discussed educational association, but only a clinician can interpret an individual case.",
+    "risks": [
+      "Microcytic patterns are frequently discussed in the context of iron deficiency",
+      "Ongoing patterns may prompt further evaluation of diet, blood loss, or other causes"
+    ],
+    "remedies": [
+      "Share CBC trends with a clinician",
+      "Do not self-start high-dose iron without medical advice",
+      "Ask whether ferritin or iron studies are appropriate"
+    ],
+    "tags": ["mcv", "mch", "iron", "cbc"],
+    "sources": [
+      "https://medlineplus.gov/lab-tests/mcv-mean-corpuscular-volume/",
+      "https://www.ncbi.nlm.nih.gov/books/NBK459340/"
+    ]
+  },
+  "high_neutrophils": {
+    "findingKey": "high_neutrophils",
+    "title": "Elevated neutrophil percentage",
+    "summary": "A high neutrophil percentage on a CBC differential can occur with infection, inflammation, stress, or other contexts. It is a lab pattern, not a diagnosis by itself.",
+    "risks": [
+      "Marked or persistent neutrophilia may warrant clinical correlation with symptoms",
+      "Isolated percentage shifts should be interpreted with absolute counts and clinical history"
+    ],
+    "remedies": [
+      "Note any fever, recent illness, or medications when talking to a clinician",
+      "Repeat testing may be suggested if the result is unexpected"
+    ],
+    "tags": ["neutrophils", "wbc", "cbc"],
+    "sources": [
+      "https://medlineplus.gov/lab-tests/neutrophils/",
+      "https://www.nhlbi.nih.gov/health/blood-tests"
+    ]
+  },
+  "high_blood_sugar": {
+    "findingKey": "high_blood_sugar",
+    "title": "Elevated blood sugar",
+    "summary": "Higher-than-reference glucose values are discussed in relation to diabetes risk and metabolic health. Long-term elevation is associated in educational materials with eye, kidney, and heart complications — interpretation belongs with a clinician.",
+    "risks": [
+      "Sustained high blood sugar is linked in public health materials to complications affecting eyes, kidneys, and heart",
+      "Single abnormal values need clinical context and often confirmation"
+    ],
+    "remedies": [
+      "Discuss diet, activity, and follow-up testing with a clinician",
+      "Do not change prescribed diabetes medicines based on an app insight"
+    ],
+    "tags": ["glucose", "diabetes", "metabolic"],
+    "sources": [
+      "https://www.cdc.gov/diabetes/about/index.html",
+      "https://medlineplus.gov/bloodglucose.html"
+    ]
+  },
+  "hiv_1_2_abnormal": {
+    "findingKey": "hiv_1_2_abnormal",
+    "title": "Reactive HIV screening result",
+    "summary": "A reactive HIV-1/2 screening test is not a final diagnosis. Public health guidance emphasizes confirmatory testing and prompt clinical follow-up.",
+    "risks": [
+      "Screening tests can be falsely reactive; confirmation is required",
+      "Delayed follow-up can postpone care if infection is confirmed"
+    ],
+    "remedies": [
+      "Contact a clinician or testing program promptly for confirmatory testing",
+      "Use official public health resources for next-step guidance"
+    ],
+    "tags": ["hiv", "screening"],
+    "sources": [
+      "https://www.cdc.gov/hiv/testing/index.html",
+      "https://medlineplus.gov/lab-tests/hiv-test/"
+    ]
+  },
+  "hcv_antibody_abnormal": {
+    "findingKey": "hcv_antibody_abnormal",
+    "title": "Reactive HCV antibody",
+    "summary": "A reactive hepatitis C antibody test indicates exposure and needs RNA/confirmatory testing to determine current infection status.",
+    "risks": [
+      "Antibody positivity alone does not confirm active infection",
+      "Untreated chronic HCV can affect liver health over time"
+    ],
+    "remedies": [
+      "Ask a clinician about HCV RNA testing and linkage to care",
+      "Avoid interpreting antibody results as a standalone diagnosis"
+    ],
+    "tags": ["hcv", "hepatitis", "liver"],
+    "sources": [
+      "https://www.cdc.gov/hepatitis-c/testing/index.html",
+      "https://medlineplus.gov/hepatitisc.html"
+    ]
+  },
+  "hbsag_abnormal": {
+    "findingKey": "hbsag_abnormal",
+    "title": "Reactive HBsAg",
+    "summary": "Hepatitis B surface antigen (HBsAg) reactivity suggests current hepatitis B infection and requires clinical evaluation and further serology.",
+    "risks": [
+      "Chronic hepatitis B can affect long-term liver health",
+      "Household and partner counseling may be clinically relevant"
+    ],
+    "remedies": [
+      "Seek clinician follow-up for confirmatory panels and care planning",
+      "Do not rely on an app for diagnosis or treatment decisions"
+    ],
+    "tags": ["hbv", "hepatitis", "hbsag"],
+    "sources": [
+      "https://www.cdc.gov/hepatitis-b/testing/index.html",
+      "https://medlineplus.gov/hepatitisb.html"
+    ]
+  }
+}
