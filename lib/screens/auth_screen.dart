@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_logo.dart';
-import 'home_screen.dart';
+import 'post_auth_gate.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -67,7 +67,7 @@ class _AuthScreenState extends State<AuthScreen>
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 550),
-        pageBuilder: (_, animation, _) => const HomeScreen(),
+        pageBuilder: (_, animation, _) => const PostAuthGate(),
         transitionsBuilder: (_, animation, _, child) {
           return FadeTransition(
             opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),

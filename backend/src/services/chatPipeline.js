@@ -14,23 +14,37 @@ const SYSTEM = `You are Nemo Care, a personal health records companion.
 Answer the user's question using ONLY the data blocks in the message:
 - LATEST LAB REPORTS (full values from the newest report of each type)
 - ACTIVE FINDINGS (abnormal patterns derived from those labs)
+- PATIENT PROFILE (onboarding: name, age/DOB, sex, height, weight, BMI, blood group, conditions, allergies, medications, lifestyle, pregnancy)
 - MEDICAL_KB (curated educational notes)
 - short chat history
 
 Rules:
+- Profile / medical-history questions (name, age, height, weight, BMI, blood group, conditions, allergies, meds, smoking, alcohol, diet, activity, pregnancy): answer from PATIENT PROFILE. Quote the saved fields plainly. If a field is empty, say it was not provided during onboarding.
 - When asked for a specific lab (e.g. platelets, hemoglobin), read LATEST LAB REPORTS and quote value, unit, date, and reference range if present.
 - Prefer the newest date shown for that report type.
-- If the value is not in LATEST LAB REPORTS, say you do not see that parameter in the uploaded reports — do NOT invent numbers and do NOT talk about "provided data" or system instructions.
+- Respect drug allergies and current medications — never suggest a drug that conflicts.
+- If height/weight are marked approximate, say the value is approximate.
+- If the value is not in LATEST LAB REPORTS or PATIENT PROFILE as relevant, say you do not see that in the saved profile or uploaded reports — do NOT invent numbers and do NOT talk about "provided data" or system instructions.
 - No diagnosis and no prescriptions.
-- Keep under 120 words.
+- Keep under 140 words.
 - End with: Not medical advice—ask your clinician.`;
 
 /**
  * Answer a home-chat question with the same grounding stack as Insights.
  *
- * @param {{ email: string, question: string, history?: Array<{ role: string, content: string }> }} opts
+ * @param {{
+ *   email: string,
+ *   question: string,
+ *   history?: Array<{ role: string, content: string }>,
+ *   comparisonContext?: object | null,
+ * }} opts
  */
-export async function answerQuestion({ email, question, history = [] }) {
+export async function answerQuestion({
+  email,
+  question,
+  history = [],
+  comparisonContext = null,
+}) {
   const trimmed = String(question || '').trim();
   if (!trimmed) {
     throw new Error('question is required');
@@ -49,6 +63,13 @@ export async function answerQuestion({ email, question, history = [] }) {
   const activeFindingKeys = context.activeFindings.map((f) => f.key);
   const age =
     typeof context.profile?.age === 'number' ? context.profile.age : null;
+
+  const hasComparison =
+    comparisonContext &&
+    typeof comparisonContext === 'object' &&
+    (Array.isArray(comparisonContext.increased) ||
+      Array.isArray(comparisonContext.decreased) ||
+      Array.isArray(comparisonContext.unchanged));
 
   const relevantKeys = selectRelevantFindingKeys(trimmed, activeFindingKeys);
   const kbChunks = [];
@@ -103,11 +124,78 @@ export async function answerQuestion({ email, question, history = [] }) {
       content: String(h.content || '').slice(0, 600),
     }));
 
-  const userPayload = `LATEST LAB REPORTS (use these for specific counts like platelets, hemoglobin, etc.):
+  const p = context.profile || {};
+  const profileBlock = JSON.stringify(
+    {
+      name: p.name || '',
+      dob: p.dob || '',
+      age: p.age ?? null,
+      ageRange: p.ageRange || '',
+      ageApproximate: p.ageApproximate === true,
+      sex: p.sex || '',
+      genderIdentity: p.genderIdentity || '',
+      height_cm: p.height_cm || '',
+      weight_kg: p.weight_kg || '',
+      bmi: p.bmi || '',
+      heightApproximate: p.heightApproximate === true,
+      weightApproximate: p.weightApproximate === true,
+      bloodGroup: p.bloodGroup || '',
+      knownConditions: p.knownConditions || [],
+      onDialysis: p.onDialysis === true,
+      eyeConditions: p.eyeConditions || [],
+      skinConditions: p.skinConditions || [],
+      foodIntolerances: p.foodIntolerances || [],
+      medications: p.medications || [],
+      currentMedications: p.currentMedications || [],
+      drugAllergies: p.drugAllergies || [],
+      otherAllergies: p.otherAllergies || [],
+      allergies: p.allergies || [],
+      smokingStatus: p.smokingStatus || '',
+      alcoholUse: p.alcoholUse || '',
+      dietPreference: p.dietPreference || '',
+      activityLevel: p.activityLevel || '',
+      pregnancyStatus: p.pregnancyStatus || '',
+    },
+    null,
+    2,
+  );
+
+  const comparisonBlock = hasComparison
+    ? JSON.stringify(comparisonContext, null, 2)
+    : '';
+
+  const system = hasComparison
+    ? `${SYSTEM}
+
+When REPORT COMPARISON is present, write ONLY a short "What this means" insight (2-3 sentences) grounded in those deltas and MEDICAL_KB / reference ranges. Do not re-list every metric — the app already shows Increased/Decreased/Unchanged cards. No diagnosis or prescriptions.`
+    : SYSTEM;
+
+  const userPayload = hasComparison
+    ? `REPORT COMPARISON (already shown as cards in the app — write the insight only):
+${comparisonBlock}
+
+LATEST LAB REPORTS:
 ${labsBlock}
 
 ACTIVE FINDINGS:
 ${findingsBlock}
+
+PATIENT PROFILE:
+${profileBlock}
+
+MEDICAL_KB:
+${kbText}
+
+QUESTION:
+${trimmed}`
+    : `LATEST LAB REPORTS (use these for specific counts like platelets, hemoglobin, etc.):
+${labsBlock}
+
+ACTIVE FINDINGS:
+${findingsBlock}
+
+PATIENT PROFILE:
+${profileBlock}
 
 MEDICAL_KB:
 ${kbText}
@@ -116,9 +204,9 @@ QUESTION:
 ${trimmed}`;
 
   let reply = await chatText({
-    system: SYSTEM,
+    system,
     messages: [...recent, { role: 'user', content: userPayload }],
-    maxTokens: 220,
+    maxTokens: hasComparison ? 160 : 220,
     temperature: 0.2,
   });
 
@@ -133,6 +221,7 @@ ${trimmed}`;
     activeFindings: activeFindingKeys,
     kbKeys: kbChunks.map((c) => c.findingKey).filter(Boolean),
     reportDates: latestReports.map((r) => `${r.reportType}/${r.date}`),
+    comparison: hasComparison ? comparisonContext : null,
   };
 }
 

@@ -57,24 +57,68 @@ class PatientContextService {
     }
 
     final dob = '${userDoc['dob'] ?? ''}';
+    final sex = '${userDoc['sex'] ?? userDoc['gender'] ?? ''}';
+    final drugAllergies = _stringList(userDoc['drugAllergies']);
+    final otherAllergies = _stringList(userDoc['otherAllergies']);
+    final foodIntolerances = _stringList(userDoc['foodIntolerances']);
+    final legacyAllergies = _stringList(userDoc['allergies']);
+    final allergies = <String>{
+      ...drugAllergies,
+      ...otherAllergies,
+      ...foodIntolerances.where((k) => k != 'none'),
+      ...legacyAllergies,
+    }.toList();
 
     return PatientContext(
       profile: {
         'name': '${userDoc['name'] ?? ''}',
         'dob': dob,
         'age': UserProfile.ageFromDob(dob),
-        'sex': '${userDoc['gender'] ?? ''}',
-        'gender': '${userDoc['gender'] ?? ''}',
+        'ageRange': '${userDoc['ageRange'] ?? ''}',
+        'ageApproximate': userDoc['ageApproximate'] == true,
+        'sex': sex,
+        'gender': sex,
+        'genderIdentity': '${userDoc['genderIdentity'] ?? ''}',
         'height_cm': '${userDoc['height_cm'] ?? ''}',
         'weight_kg': '${userDoc['weight_kg'] ?? ''}',
         'bmi': '${userDoc['bmi'] ?? ''}',
+        'heightApproximate': userDoc['heightApproximate'] == true,
+        'weightApproximate': userDoc['weightApproximate'] == true,
         'married': '${userDoc['married'] ?? ''}',
-        'medications': _stringList(userDoc['currentMedications']),
-        'allergies': _stringList(userDoc['allergies']),
+        'bloodGroup': '${userDoc['bloodGroup'] ?? ''}',
+        'knownConditions': _stringList(userDoc['knownConditions']),
+        'onDialysis': userDoc['onDialysis'] == true,
+        'eyeConditions': _stringList(userDoc['eyeConditions']),
+        'skinConditions': _stringList(userDoc['skinConditions']),
+        'foodIntolerances': foodIntolerances,
+        'medications': _medicationNames(userDoc['currentMedications']),
+        'allergies': allergies,
+        'drugAllergies': drugAllergies,
+        'otherAllergies': otherAllergies,
+        'smokingStatus': '${userDoc['smokingStatus'] ?? ''}',
+        'alcoholUse': '${userDoc['alcoholUse'] ?? ''}',
+        'dietPreference': '${userDoc['dietPreference'] ?? ''}',
+        'activityLevel': '${userDoc['activityLevel'] ?? ''}',
+        'pregnancyStatus': '${userDoc['pregnancyStatus'] ?? ''}',
       },
       activeFindings: activeFindings,
       supportingValues: supporting,
     );
+  }
+
+  static List<String> _medicationNames(dynamic raw) {
+    if (raw is! List) return const [];
+    final out = <String>[];
+    for (final item in raw) {
+      if (item is Map) {
+        final name = '${item['name'] ?? ''}'.trim();
+        if (name.isNotEmpty) out.add(name);
+      } else {
+        final name = item?.toString().trim() ?? '';
+        if (name.isNotEmpty) out.add(name);
+      }
+    }
+    return out;
   }
 
   /// Resolves `cbc/2026-09-14/mcv` → the matching `values[]` entry (plus path meta).

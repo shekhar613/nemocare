@@ -33,7 +33,17 @@ router.post(
       }
 
       const history = Array.isArray(req.body?.history) ? req.body.history : [];
-      const result = await answerQuestion({ email, question, history });
+      const comparisonContext =
+        req.body?.comparisonContext &&
+        typeof req.body.comparisonContext === 'object'
+          ? req.body.comparisonContext
+          : null;
+      const result = await answerQuestion({
+        email,
+        question,
+        history,
+        comparisonContext,
+      });
 
       return res.json({
         ok: true,

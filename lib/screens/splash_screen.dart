@@ -7,7 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_logo.dart';
 import 'auth_screen.dart';
-import 'home_screen.dart';
+import 'post_auth_gate.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -86,7 +86,7 @@ class _SplashScreenState extends State<SplashScreen>
     await Future<void>.delayed(const Duration(milliseconds: 2800));
     if (!mounted) return;
     final isSignedIn = FirebaseAuth.instance.currentUser != null;
-    final next = isSignedIn ? const HomeScreen() : const AuthScreen();
+    final next = isSignedIn ? const PostAuthGate() : const AuthScreen();
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 700),

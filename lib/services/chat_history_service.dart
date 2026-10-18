@@ -37,7 +37,7 @@ class ChatHistoryService {
       return decoded
           .whereType<Map>()
           .map((e) => ChatMessage.fromJson(Map<String, dynamic>.from(e)))
-          .where((m) => m.content.trim().isNotEmpty)
+          .where((m) => m.isPersistable)
           .toList();
     } catch (_) {
       return [];
@@ -49,9 +49,7 @@ class ChatHistoryService {
     if (key == null) return;
 
     try {
-      final trimmed = messages
-          .where((m) => m.content.trim().isNotEmpty)
-          .toList();
+      final trimmed = messages.where((m) => m.isPersistable).toList();
       final capped = trimmed.length > _maxMessages
           ? trimmed.sublist(trimmed.length - _maxMessages)
           : trimmed;

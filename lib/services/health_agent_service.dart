@@ -8,6 +8,18 @@ import '../config/backend_config.dart';
 import '../models/chat_message.dart';
 import '../models/finding.dart';
 import '../models/medical_report.dart';
+import '../models/report_comparison.dart';
+
+/// Result of a home-chat ask (plain reply + optional structured comparison).
+class HealthAgentReply {
+  const HealthAgentReply({
+    required this.reply,
+    this.comparison,
+  });
+
+  final String reply;
+  final ReportComparison? comparison;
+}
 
 class HealthAgentException implements Exception {
   HealthAgentException(this.message);
@@ -54,15 +66,17 @@ class HealthAgentService {
     required List<MedicalReport> reports,
     List<ChatMessage> history = const [],
     List<Finding> findings = const [],
+    ReportComparison? comparisonContext,
   }) async* {
-    final reply = await ask(
+    final result = await askDetailed(
       question: question,
       reports: reports,
       history: history,
       findings: findings,
+      comparisonContext: comparisonContext,
     );
-    // Chunk so HomeScreen's streaming UI still paints progressively.
     const chunkSize = 24;
+    final reply = result.reply;
     for (var i = 0; i < reply.length; i += chunkSize) {
       final end = (i + chunkSize < reply.length) ? i + chunkSize : reply.length;
       yield reply.substring(i, end);
@@ -70,12 +84,31 @@ class HealthAgentService {
     }
   }
 
-  /// One-shot ask via Express `/chat/ask`.
+  /// One-shot ask via Express `/chat/ask` (plain string).
   Future<String> ask({
     required String question,
     required List<MedicalReport> reports,
     List<ChatMessage> history = const [],
     List<Finding> findings = const [],
+    ReportComparison? comparisonContext,
+  }) async {
+    final result = await askDetailed(
+      question: question,
+      reports: reports,
+      history: history,
+      findings: findings,
+      comparisonContext: comparisonContext,
+    );
+    return result.reply;
+  }
+
+  /// Full ask including optional structured comparison echo from the server.
+  Future<HealthAgentReply> askDetailed({
+    required String question,
+    required List<MedicalReport> reports,
+    List<ChatMessage> history = const [],
+    List<Finding> findings = const [],
+    ReportComparison? comparisonContext,
   }) async {
     final trimmed = question.trim();
     if (trimmed.isEmpty) {
@@ -114,17 +147,21 @@ class HealthAgentService {
         )
         .toList();
 
+    final body = <String, dynamic>{
+      'email': email,
+      'question': trimmed,
+      'history': historyPayload,
+      if (comparisonContext != null)
+        'comparisonContext': comparisonContext.toJson(),
+    };
+
     late final http.Response response;
     try {
       response = await _client
           .post(
             Uri.parse(BackendConfig.chatAskUrl),
             headers: headers,
-            body: jsonEncode({
-              'email': email,
-              'question': trimmed,
-              'history': historyPayload,
-            }),
+            body: jsonEncode(body),
           )
           .timeout(const Duration(seconds: 90));
     } catch (e) {
@@ -147,7 +184,13 @@ class HealthAgentService {
       if (reply.isEmpty) {
         throw HealthAgentException('Chat API returned an empty reply.');
       }
-      return reply;
+      ReportComparison? comparison;
+      final rawCmp = decoded['comparison'];
+      if (rawCmp is Map) {
+        comparison =
+            ReportComparison.fromJson(Map<String, dynamic>.from(rawCmp));
+      }
+      return HealthAgentReply(reply: reply, comparison: comparison);
     } catch (e) {
       if (e is HealthAgentException) rethrow;
       throw HealthAgentException('Chat API returned invalid JSON.');

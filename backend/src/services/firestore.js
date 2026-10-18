@@ -111,19 +111,86 @@ export function buildPatientContext(userDoc) {
   }
 
   const dob = String(userDoc?.dob || '');
+  const sex = String(userDoc?.sex || userDoc?.gender || '');
+  const drugAllergies = stringList(userDoc?.drugAllergies);
+  const otherAllergies = stringList(userDoc?.otherAllergies);
+  const foodIntolerances = stringList(userDoc?.foodIntolerances);
+  const allergies = [
+    ...new Set([
+      ...drugAllergies,
+      ...otherAllergies,
+      ...foodIntolerances.filter((k) => k !== 'none'),
+      ...stringList(userDoc?.allergies),
+    ]),
+  ];
+
   return {
     profile: {
       name: String(userDoc?.name || ''),
       dob,
       age: ageFromDob(dob),
-      sex: String(userDoc?.gender || ''),
-      gender: String(userDoc?.gender || ''),
-      medications: stringList(userDoc?.currentMedications),
-      allergies: stringList(userDoc?.allergies),
+      ageRange: String(userDoc?.ageRange || ''),
+      ageApproximate: userDoc?.ageApproximate === true,
+      sex,
+      gender: sex,
+      genderIdentity: String(userDoc?.genderIdentity || ''),
+      height_cm: String(userDoc?.height_cm || ''),
+      weight_kg: String(userDoc?.weight_kg || ''),
+      bmi: String(userDoc?.bmi || ''),
+      heightApproximate: userDoc?.heightApproximate === true,
+      weightApproximate: userDoc?.weightApproximate === true,
+      bloodGroup: String(userDoc?.bloodGroup || ''),
+      knownConditions: stringList(userDoc?.knownConditions),
+      onDialysis: userDoc?.onDialysis === true,
+      eyeConditions: stringList(userDoc?.eyeConditions),
+      skinConditions: stringList(userDoc?.skinConditions),
+      foodIntolerances,
+      medications: medicationNames(userDoc?.currentMedications),
+      currentMedications: medicationDetails(userDoc?.currentMedications),
+      allergies,
+      drugAllergies,
+      otherAllergies,
+      smokingStatus: String(userDoc?.smokingStatus || ''),
+      alcoholUse: String(userDoc?.alcoholUse || ''),
+      dietPreference: String(userDoc?.dietPreference || ''),
+      activityLevel: String(userDoc?.activityLevel || ''),
+      pregnancyStatus: String(userDoc?.pregnancyStatus || ''),
     },
     activeFindings,
     supportingValues,
   };
+}
+
+function medicationNames(raw) {
+  if (!Array.isArray(raw)) return [];
+  const out = [];
+  for (const item of raw) {
+    if (item && typeof item === 'object') {
+      const name = String(item.name || '').trim();
+      if (name) out.push(name);
+    } else {
+      const name = String(item ?? '').trim();
+      if (name) out.push(name);
+    }
+  }
+  return out;
+}
+
+function medicationDetails(raw) {
+  if (!Array.isArray(raw)) return [];
+  const out = [];
+  for (const item of raw) {
+    if (item && typeof item === 'object') {
+      const name = String(item.name || '').trim();
+      if (!name) continue;
+      const dosage = String(item.dosage || '').trim();
+      out.push(dosage ? { name, dosage } : { name });
+    } else {
+      const name = String(item ?? '').trim();
+      if (name) out.push({ name });
+    }
+  }
+  return out;
 }
 
 function resolvePath(userDoc, pathStr) {
@@ -158,11 +225,35 @@ function resolvePath(userDoc, pathStr) {
 const PROFILE_KEYS = new Set([
   'name',
   'dob',
+  'ageRange',
+  'ageApproximate',
+  'sex',
   'gender',
+  'genderIdentity',
   'height_cm',
   'weight_kg',
   'bmi',
+  'heightApproximate',
+  'weightApproximate',
   'married',
+  'bloodGroup',
+  'knownConditions',
+  'onDialysis',
+  'eyeConditions',
+  'skinConditions',
+  'foodIntolerances',
+  'drugAllergies',
+  'otherAllergies',
+  'currentMedications',
+  'medicationNames',
+  'allergies',
+  'smokingStatus',
+  'alcoholUse',
+  'dietPreference',
+  'activityLevel',
+  'pregnancyStatus',
+  'onboardingCompleted',
+  'onboardingCompletedAt',
   'email',
   'uid',
   'createdAt',
@@ -170,8 +261,6 @@ const PROFILE_KEYS = new Set([
   'findings',
   'insights',
   'insights_meta',
-  'currentMedications',
-  'allergies',
 ]);
 
 function reportSortMs(dateKey, data) {

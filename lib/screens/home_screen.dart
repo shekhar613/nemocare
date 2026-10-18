@@ -14,12 +14,15 @@ import '../services/auth_service.dart';
 import '../services/chat_history_service.dart';
 import '../services/groq_service.dart';
 import '../services/health_agent_service.dart';
+import '../services/report_comparison_service.dart';
 import '../services/reports_service.dart';
 import '../services/user_profile_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_logo.dart';
+import '../widgets/report_comparison_chat_card.dart';
 import 'auth_screen.dart';
 import 'insights_screen.dart';
+import 'onboarding/onboarding_screen.dart';
 import 'report_details_screen.dart';
 import 'vitals_screen.dart';
 
@@ -402,6 +405,15 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
+  Future<void> _openHealthProfileEditor() async {
+    _closeSidebar();
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const OnboardingScreen(isEditing: true),
+      ),
+    );
+  }
+
   Future<void> _submitPrompt() async {
     final text = _promptController.text.trim();
 
@@ -426,6 +438,62 @@ class _HomeScreenState extends State<HomeScreen>
     _scrollChatToBottom();
 
     final assistantIndex = _messages.length - 1;
+
+    final comparisonDraft = ReportComparisonService.isComparisonIntent(text)
+        ? ReportComparisonService().compareLatestPair(_timeline)
+        : null;
+
+    // Rich comparison card path (Increased / Decreased / Unchanged).
+    if (comparisonDraft != null) {
+      try {
+        final result = await _healthAgent.askDetailed(
+          question: text,
+          reports: _timeline,
+          history: historySnapshot,
+          findings: _findings,
+          comparisonContext: comparisonDraft,
+        );
+        if (!mounted) return;
+        final insight = _cleanComparisonInsight(
+          result.reply,
+          fallback: comparisonDraft.insight,
+        );
+        final comparison = comparisonDraft.copyWith(insight: insight);
+        setState(() {
+          _messages[assistantIndex] = ChatMessage.assistant(
+            comparison.intro,
+            comparison: comparison,
+          );
+          _isAsking = false;
+        });
+        _scrollChatToBottom();
+        await _persistChatHistory();
+      } on HealthAgentException catch (e) {
+        if (!mounted) return;
+        // Still show the structured card with local insight if the API fails.
+        setState(() {
+          _messages[assistantIndex] = ChatMessage.assistant(
+            comparisonDraft.intro,
+            comparison: comparisonDraft,
+          );
+          _isAsking = false;
+        });
+        await _persistChatHistory();
+        _showMessage(e.message, isError: true);
+      } catch (_) {
+        if (!mounted) return;
+        setState(() {
+          _messages[assistantIndex] = ChatMessage.assistant(
+            comparisonDraft.intro,
+            comparison: comparisonDraft,
+          );
+          _isAsking = false;
+        });
+        await _persistChatHistory();
+      }
+      return;
+    }
+
     var pendingUpdate = false;
     var lastUiUpdate = DateTime.fromMillisecondsSinceEpoch(0);
 
@@ -462,7 +530,7 @@ class _HomeScreenState extends State<HomeScreen>
       if (!mounted) return;
       setState(() {
         if (_messages.length > assistantIndex &&
-            _messages[assistantIndex].content.isEmpty) {
+            !_messages[assistantIndex].isPersistable) {
           _messages.removeAt(assistantIndex);
         }
         _isAsking = false;
@@ -473,7 +541,7 @@ class _HomeScreenState extends State<HomeScreen>
       if (!mounted) return;
       setState(() {
         if (_messages.length > assistantIndex &&
-            _messages[assistantIndex].content.isEmpty) {
+            !_messages[assistantIndex].isPersistable) {
           _messages.removeAt(assistantIndex);
         }
         _isAsking = false;
@@ -484,6 +552,36 @@ class _HomeScreenState extends State<HomeScreen>
         isError: true,
       );
     }
+  }
+
+  String _cleanComparisonInsight(String reply, {required String fallback}) {
+    var out = reply.trim();
+    if (out.isEmpty) return fallback;
+    out = out
+        .replaceAll(
+          RegExp(
+            r'Not medical advice[—.–-]?\s*ask your clinician\.?',
+            caseSensitive: false,
+          ),
+          '',
+        )
+        .replaceAll(
+          RegExp(
+            r'This is a simple summary, not a diagnosis\.?',
+            caseSensitive: false,
+          ),
+          '',
+        )
+        .trim();
+    return out.isEmpty ? fallback : out;
+  }
+
+  void _openInsightsFromComparison() {
+    setState(() {
+      _selectedNav = _insightsIndex;
+      _showTimelineOverChat = false;
+    });
+    _closeSidebar();
   }
 
   @override
@@ -558,6 +656,8 @@ class _HomeScreenState extends State<HomeScreen>
                                         reportCount: _timeline.length,
                                         onClear: _clearChat,
                                         onShowTimeline: _openTimeline,
+                                        onUnderstandMore:
+                                            _openInsightsFromComparison,
                                       )
                                     : _BodySection(
                                         timeline: _timeline,
@@ -612,6 +712,7 @@ class _HomeScreenState extends State<HomeScreen>
                                 _closeSidebar();
                               },
                               onClose: _closeSidebar,
+                              onEditHealthProfile: _openHealthProfileEditor,
                               onSignOut: _signOut,
                             ),
                           ),
@@ -974,6 +1075,7 @@ class _ChatSection extends StatelessWidget {
     required this.reportCount,
     required this.onClear,
     required this.onShowTimeline,
+    this.onUnderstandMore,
   });
 
   final List<ChatMessage> messages;
@@ -982,6 +1084,7 @@ class _ChatSection extends StatelessWidget {
   final int reportCount;
   final VoidCallback onClear;
   final VoidCallback onShowTimeline;
+  final VoidCallback? onUnderstandMore;
 
   @override
   Widget build(BuildContext context) {
@@ -1049,10 +1152,17 @@ class _ChatSection extends StatelessWidget {
               final message = messages[index];
               final isStreamingPlaceholder = isAsking &&
                   !message.isUser &&
+                  !message.hasRichComparison &&
                   message.content.isEmpty &&
                   index == messages.length - 1;
               if (isStreamingPlaceholder) {
                 return const _TypingBubble();
+              }
+              if (message.hasRichComparison) {
+                return ReportComparisonChatCard(
+                  comparison: message.comparison!,
+                  onUnderstandMore: onUnderstandMore,
+                );
               }
               final isStreamingReply = isAsking &&
                   !message.isUser &&
@@ -2034,6 +2144,7 @@ class _Sidebar extends StatelessWidget {
     required this.selectedIndex,
     required this.onSelect,
     required this.onClose,
+    required this.onEditHealthProfile,
     required this.onSignOut,
   });
 
@@ -2041,6 +2152,7 @@ class _Sidebar extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onSelect;
   final VoidCallback onClose;
+  final VoidCallback onEditHealthProfile;
   final VoidCallback onSignOut;
 
   String get _initials {
@@ -2211,6 +2323,33 @@ class _Sidebar extends StatelessWidget {
               );
             }),
             const Spacer(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
+              child: ListTile(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                leading: const Icon(
+                  Icons.person_outline_rounded,
+                  color: AppColors.deepTeal,
+                ),
+                title: Text(
+                  'Health profile',
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.ink,
+                  ),
+                ),
+                subtitle: Text(
+                  'Update onboarding details',
+                  style: GoogleFonts.outfit(
+                    fontSize: 12,
+                    color: AppColors.muted,
+                  ),
+                ),
+                onTap: onEditHealthProfile,
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
               child: ListTile(
